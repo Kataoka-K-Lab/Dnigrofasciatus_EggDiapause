@@ -7,5 +7,3 @@ purge_haplotigs hist \
 -b $BAM \
 -g $GENOME_FASTA \
 -t $THREADS
-
-ph.sh 1> ph.stdout 2> ph.stderr &
