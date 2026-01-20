@@ -54,5 +54,11 @@ short_avg_combined_s <- standardise(short_exp_set)
 m_long <- mestimate(long_avg_combined_s) # 1.999423
 m_short <- mestimate(short_avg_combined_s) # 1.999423
 
+dmin_long <- Dmin(long_avg_combined_s, m = m_long, crange = seq(2, 50, 1), repeats = 3)
+optimal_clusters_long <- which.min(dmin_long)
+
+dmin_short <- Dmin(short_avg_combined_s, m = m_short, crange = seq(2, 50, 1), repeats = 3)
+optimal_clusters_short <- which.min(dmin_short)
+                                               
 long_avg_combined_s_cl <- mfuzz(long_avg_combined_s, c = 20, m = m_long)
 short_avg_combined_s_cl <- mfuzz(short_avg_combined_s, c = 20, m = m_short)
