@@ -1,0 +1,10 @@
+chr - LG1 1 0 229901976 chr1
+chr - LG2 2 0 213223370 chr2
+chr - LG3 3 0 158631484 chr3
+chr - LG4 4 0 154667063 chr4
+chr - LG5 5 0 149900673 chr5
+chr - LG6 6 0 126949752 chr6
+chr - LG7 7 0 120426416 chr7
+chr - LG8 8 0 88492697 chr8
+chr - LG9 9 0 85114162 chr9
+chr - LG10 10 0 42794646 chr10
