@@ -8,8 +8,8 @@
 
 WORK_DIR=/work2/kataoka/madarasuzu/purgehaplotigs
 FASTA_IN=/work2/kataoka/madarasuzu/masurca/CA.mr.99.17.15.0.02/primary.genome.scf.fasta
-ONT_READ=/work2/korogi/Madarasuzu/ont_seq/madarasuzu_ontseq.fastq
-THREADS=20
+#ONT_READ=/work2/korogi/Madarasuzu/ont_seq/madarasuzu_ontseq.fastq
+THREADS=10
 
 source ~/.bashrc
 conda activate purge_haplotigs_env
@@ -19,6 +19,12 @@ conda activate purge_haplotigs_env
 cd $WORK_DIR
 
 purge_haplotigs hist \
--b out_sorted.bam \
+-b out_sorted.SR.bam \
 -g $FASTA_IN \
 -t $THREADS
+
+
+# nohup purge_haplotigs hist \
+# -b out_sorted.SR.bam \
+# -g $FASTA_IN \
+# -t $THREADS > purge_haplotigs_hist.err &
