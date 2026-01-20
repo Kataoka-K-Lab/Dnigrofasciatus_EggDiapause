@@ -62,3 +62,13 @@ optimal_clusters_short <- which.min(dmin_short)
                                                
 long_avg_combined_s_cl <- mfuzz(long_avg_combined_s, c = 20, m = m_long)
 short_avg_combined_s_cl <- mfuzz(short_avg_combined_s, c = 20, m = m_short)
+
+write.csv(long_avg_combined_s_cl$centers, file = "/Users/kataokak/Desktop/cluster_centers_long.csv")
+write.csv(long_avg_combined_s_cl$size, file = "/Users/kataokak/Desktop/cluster_sizes_long.csv")
+write.csv(long_avg_combined_s_cl$cluster, file = "/Users/kataokak/Desktop/clusters_long.csv")
+write.csv(long_avg_combined_s_cl$membership, file = "/Users/kataokak/Desktop/cluster_memberships_long.csv")
+
+write.csv(short_avg_combined_s_cl$centers, file = "/Users/kataokak/Desktop/cluster_centers_short.csv")
+write.csv(short_avg_combined_s_cl$size, file = "/Users/kataokak/Desktop/cluster_sizes_short.csv")
+write.csv(short_avg_combined_s_cl$cluster, file = "/Users/kataokak/Desktop/clusters_short.csv")
+write.csv(short_avg_combined_s_cl$membership, file = "/Users/kataokak/Desktop/cluster_memberships_short.csv")
