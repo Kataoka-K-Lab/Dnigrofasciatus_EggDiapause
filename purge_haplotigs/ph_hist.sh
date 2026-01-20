@@ -28,3 +28,6 @@ purge_haplotigs hist \
 # -b out_sorted.SR.bam \
 # -g $FASTA_IN \
 # -t $THREADS > purge_haplotigs_hist.err &
+
+samtools depth -a out_sorted.SR.bam | awk '{c++;s+=$3}END{print s/c}'
+#  94.4881
