@@ -31,3 +31,15 @@ purge_haplotigs hist \
 
 samtools depth -a out_sorted.SR.bam | awk '{c++;s+=$3}END{print s/c}'
 #  94.4881
+
+purge_haplotigs cov \
+-i out_sorted.SR.bam.gencov \
+-l 5 \
+-m 70 \
+-h 190 \
+-j 101 
+
+purge_haplotigs purge \
+-g $FASTA_IN \
+-c coverage_stats.csv \
+-t 20
