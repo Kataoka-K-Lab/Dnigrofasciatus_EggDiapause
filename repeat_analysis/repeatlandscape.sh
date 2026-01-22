@@ -12,7 +12,6 @@ ${ALIGN_IN}
 
 ### STEP 2 ###
 
-# エラーはいたがこれをやりおしたら以下うまくいった
 faToTwoBit ${FASTA_IN} ${SPECIES_NAME}.2bit
 
 ### STEP 3 ###
