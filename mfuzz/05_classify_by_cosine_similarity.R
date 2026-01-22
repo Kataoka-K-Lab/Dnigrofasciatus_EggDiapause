@@ -1,4 +1,5 @@
 library(dplyr)
+library(ggplot2)
 
 short_centers <- read.csv("/Users/kosukekataoka/Desktop/cluster_centers_short.csv", row.names = 1)
 long_centers <- read.csv("/Users/kosukekataoka/Desktop/cluster_centers_long.csv", row.names = 1)
@@ -43,3 +44,17 @@ significant_df <- significant_df %>%
   left_join(cluster_pairs, by = c("Long", "Short"))
 
 print(significant_df)
+
+summary(significant_df$CosineSimilarity)
+
+ggplot(significant_df, aes(x = CosineSimilarity)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "skyblue") +
+  labs(title = "Distribution of cosine similarity in significant_df",
+       x = "Cosine Similarity",
+       y = "Frequency") +
+  theme_minimal()
+
+significant_df$Classification <- as.character(significant_df$Classification)
+significant_df$CosineSimilarity <- as.numeric(significant_df$CosineSimilarity)
+
+write.csv(significant_df, "/Users/kosukekataoka/Desktop/significant_df_cosine_similarity.csv", row.names = FALSE)
