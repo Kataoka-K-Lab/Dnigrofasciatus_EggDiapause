@@ -100,8 +100,6 @@ stringtie --merge \
 -o stringtie_merged.gtf \
 $merge
 
-# eオプションがreference annotationが存在しない場合は取る
-
 merge_gtf=$work_dir/merge/stringtie_merged.gtf
 
 ### Transdecoder ###
@@ -123,15 +121,6 @@ $merge_gtf > $merge_gtf.gff3
 TransDecoder.LongOrfs -t $merge_gtf.fasta
 
 TransDecoder.Predict -t $merge_gtf.fasta
-
-## 以下でエラー吐く
-
-$transdecoder_home/util/cdna_alignment_orf_to_genome_orf.pl \
-$merge_gtf.fasta.transdecoder.gff3 \
-$merge_gtf.gff3 \
-$merge_gtf.fasta > $merge_gtf.fasta.transdecoder.genome.gff3
-
-## 後から以下で実行
 
 $transdecoder_home/util/cdna_alignment_orf_to_genome_orf.pl \
 $work_dir/stringtie_merged.gtf.fasta.transdecoder.gff3 \
