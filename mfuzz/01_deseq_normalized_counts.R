@@ -1,137 +1,58 @@
-library(DESeq2)
-library(ggplot2)
+library(Mfuzz)
+library(Biobase)
 
-## Egg - 12h
+extract_avg_columns <- function(df, time_label) {
+  long_avg_col <- df[[paste0(time_label, "_Long_avg")]]
+  short_avg_col <- df[[paste0(time_label, "_Short_avg")]]
+  result <- data.frame(GeneID = rownames(df), 
+                       Long_avg = long_avg_col, 
+                       Short_avg = short_avg_col)
+  return(result)
+}
 
-WORK_DIR='/Volumes/volume1/crickets/madarasuzu/rnaseq/salmon/240710_all_data/egg_filter2/Egg_12h'
-setwd(WORK_DIR)
+Egg_12h_avg <- extract_avg_columns(Egg_12h_processed, "Egg_12h")
+Egg_24h_avg <- extract_avg_columns(Egg_24h_processed, "Egg_24h")
+Egg_40h_avg <- extract_avg_columns(Egg_40h_processed, "Egg_40h")
+Egg_56h_avg <- extract_avg_columns(Egg_56h_processed, "Egg_56h")
+Egg_72h_avg <- extract_avg_columns(Egg_72h_processed, "Egg_72h")
 
-countData <- as.matrix(read.csv("counts.csv", row.names="X", sep=","))
+long_avg_combined <- Egg_12h_avg %>%
+  select(GeneID, Egg_12h_Long_avg = Long_avg) %>%
+  left_join(select(Egg_24h_avg, GeneID, Egg_24h_Long_avg = Long_avg), by = "GeneID") %>%
+  left_join(select(Egg_40h_avg, GeneID, Egg_40h_Long_avg = Long_avg), by = "GeneID") %>%
+  left_join(select(Egg_56h_avg, GeneID, Egg_56h_Long_avg = Long_avg), by = "GeneID") %>%
+  left_join(select(Egg_72h_avg, GeneID, Egg_72h_Long_avg = Long_avg), by = "GeneID")
 
-colData <- data.frame(
-sample = c('Egg_12h_Long_2', 'Egg_12h_Long_4', 'Egg_12h_Long_5', 'Egg_12h_Short_1', 'Egg_12h_Short_3', 'Egg_12h_Short_5'),
-condition = c('Non-diapause', 'Non-diapause', 'Non-diapause', 'Diapause', 'Diapause', 'Diapause'),
-row.names = "sample")
+short_avg_combined <- Egg_12h_avg %>%
+  select(GeneID, Egg_12h_Short_avg = Short_avg) %>%
+  left_join(select(Egg_24h_avg, GeneID, Egg_24h_Short_avg = Short_avg), by = "GeneID") %>%
+  left_join(select(Egg_40h_avg, GeneID, Egg_40h_Short_avg = Short_avg), by = "GeneID") %>%
+  left_join(select(Egg_56h_avg, GeneID, Egg_56h_Short_avg = Short_avg), by = "GeneID") %>%
+  left_join(select(Egg_72h_avg, GeneID, Egg_72h_Short_avg = Short_avg), by = "GeneID")
 
-columnList <- c('Egg_12h_Long_2', 'Egg_12h_Long_4', 'Egg_12h_Long_5', 'Egg_12h_Short_1', 'Egg_12h_Short_3', 'Egg_12h_Short_5')
-countData <- countData[, columnList]
+rownames(long_avg_combined) <- long_avg_combined$GeneID
+rownames(short_avg_combined) <- short_avg_combined$GeneID
 
-dds <- DESeqDataSetFromMatrix(countData = round(countData), colData = colData, design = ~ condition)
-dds <- dds[rowSums(counts(dds)) >= 10,]
-dds$condition <- relevel(dds$condition, ref = "Non-diapause")
-dds <- DESeq(dds)
-res <- results(dds)
+long_avg_combined <- long_avg_combined[, -1] 
+short_avg_combined <- short_avg_combined[, -1] 
 
-normalized_counts <- counts(dds, normalized=TRUE)
-# head(normalized_counts)
-write.csv(as.data.frame(normalized_counts), file="deseq_normalized_counts.csv")
+long_avg_combined <- na.omit(long_avg_combined)
+short_avg_combined <- na.omit(short_avg_combined)
 
-# write.csv(as.data.frame(res[order(res$padj),]), file="result_padj_ordered.csv")
+long_avg_combined <- long_avg_combined[apply(long_avg_combined, 1, function(x) all(is.finite(x))), ]
+short_avg_combined <- short_avg_combined[apply(short_avg_combined, 1, function(x) all(is.finite(x))), ]
 
-## Egg - 24h
+cv_threshold <- 1
 
-WORK_DIR='/Volumes/volume1/crickets/madarasuzu/rnaseq/salmon/240710_all_data/egg_filter2/Egg_24h'
-setwd(WORK_DIR)
+calculate_cv <- function(df) {
+  row_sd <- apply(df, 1, sd)
+  row_mean <- rowMeans(df)
+  cv <- row_sd / row_mean
+  return(cv)
+}
 
-countData <- as.matrix(read.csv("counts.csv", row.names="X", sep=","))
+long_cv <- calculate_cv(long_avg_combined)
+long_avg_combined <- long_avg_combined[long_cv < cv_threshold, ]
 
-colData <- data.frame(
-sample = c('Egg_24h_Long_3', 'Egg_24h_Long_4', 'Egg_24h_Long_5', 'Egg_24h_Long_6', 'Egg_24h_Short_2', 'Egg_24h_Short_5', 'Egg_24h_Short_6'),
-condition = c('Non-diapause', 'Non-diapause', 'Non-diapause', 'Non-diapause', 'Diapause', 'Diapause', 'Diapause'),
-row.names = "sample")
-
-columnList <- c('Egg_24h_Long_3', 'Egg_24h_Long_4', 'Egg_24h_Long_5', 'Egg_24h_Long_6', 'Egg_24h_Short_2', 'Egg_24h_Short_5', 'Egg_24h_Short_6')
-countData <- countData[, columnList]
-
-dds <- DESeqDataSetFromMatrix(countData = round(countData), colData = colData, design = ~ condition)
-dds <- dds[rowSums(counts(dds)) >= 10,]
-dds$condition <- relevel(dds$condition, ref = "Non-diapause")
-dds <- DESeq(dds)
-res <- results(dds)
-
-normalized_counts <- counts(dds, normalized=TRUE)
-# head(normalized_counts)
-write.csv(as.data.frame(normalized_counts), file="deseq_normalized_counts.csv")
-
-# write.csv(as.data.frame(res[order(res$padj),]), file="result_padj_ordered.csv")
-
-## Egg - 40h
-
-WORK_DIR='/Volumes/volume1/crickets/madarasuzu/rnaseq/salmon/240710_all_data/egg_filter2/Egg_40h'
-setwd(WORK_DIR)
-
-countData <- as.matrix(read.csv("counts.csv", row.names="X", sep=","))
-
-colData <- data.frame(
-sample = c('Egg_40h_Long_1', 'Egg_40h_Long_2', 'Egg_40h_Long_3', 'Egg_40h_Short_3', 'Egg_40h_Short_4', 'Egg_40h_Short_5'),
-condition = c('Non-diapause', 'Non-diapause', 'Non-diapause', 'Diapause', 'Diapause', 'Diapause'),
-row.names = "sample")
-
-columnList <- c('Egg_40h_Long_1', 'Egg_40h_Long_2', 'Egg_40h_Long_3', 'Egg_40h_Short_3', 'Egg_40h_Short_4', 'Egg_40h_Short_5')
-countData <- countData[, columnList]
-
-dds <- DESeqDataSetFromMatrix(countData = round(countData), colData = colData, design = ~ condition)
-dds <- dds[rowSums(counts(dds)) >= 10,]
-dds$condition <- relevel(dds$condition, ref = "Non-diapause")
-dds <- DESeq(dds)
-res <- results(dds)
-
-normalized_counts <- counts(dds, normalized=TRUE)
-# head(normalized_counts)
-write.csv(as.data.frame(normalized_counts), file="deseq_normalized_counts.csv")
-
-# write.csv(as.data.frame(res[order(res$padj),]), file="result_padj_ordered.csv")
-
-## Egg - 56h
-
-WORK_DIR='/Volumes/volume1/crickets/madarasuzu/rnaseq/salmon/240710_all_data/egg_filter2/Egg_56h'
-setwd(WORK_DIR)
-
-countData <- as.matrix(read.csv("counts.csv", row.names="X", sep=","))
-
-colData <- data.frame(
-sample = c('Egg_56h_Long_1', 'Egg_56h_Long_2', 'Egg_56h_Long_3', 'Egg_56h_Short_2', 'Egg_56h_Short_3', 'Egg_56h_Short_4', 'Egg_56h_Short_5'),
-condition = c('Non-diapause', 'Non-diapause', 'Non-diapause', 'Diapause', 'Diapause', 'Diapause', 'Diapause'),
-row.names = "sample")
-
-columnList <- c('Egg_56h_Long_1', 'Egg_56h_Long_2', 'Egg_56h_Long_3', 'Egg_56h_Short_2', 'Egg_56h_Short_3', 'Egg_56h_Short_4', 'Egg_56h_Short_5')
-countData <- countData[, columnList]
-
-dds <- DESeqDataSetFromMatrix(countData = round(countData), colData = colData, design = ~ condition)
-dds <- dds[rowSums(counts(dds)) >= 10,]
-dds$condition <- relevel(dds$condition, ref = "Non-diapause")
-dds <- DESeq(dds)
-res <- results(dds)
-
-normalized_counts <- counts(dds, normalized=TRUE)
-# head(normalized_counts)
-write.csv(as.data.frame(normalized_counts), file="deseq_normalized_counts.csv")
-
-# write.csv(as.data.frame(res[order(res$padj),]), file="result_padj_ordered.csv")
-
-## Egg - 72h
-
-WORK_DIR='/Volumes/volume1/crickets/madarasuzu/rnaseq/salmon/240710_all_data/egg_filter2/Egg_72h'
-setwd(WORK_DIR)
-
-countData <- as.matrix(read.csv("counts.csv", row.names="X", sep=","))
-
-colData <- data.frame(
-sample = c('Egg_72h_Long_2', 'Egg_72h_Long_3', 'Egg_72h_Long_4', 'Egg_72h_Long_5', 'Egg_72h_Long_6', 'Egg_72h_Short_2', 'Egg_72h_Short_3', 'Egg_72h_Short_5', 'Egg_72h_Short_6', 'Egg_72h_Short_7'),
-condition = c('Non-diapause', 'Non-diapause', 'Non-diapause', 'Non-diapause', 'Non-diapause', 'Diapause', 'Diapause', 'Diapause', 'Diapause', 'Diapause'),
-row.names = "sample")
-
-columnList <- c('Egg_72h_Long_2', 'Egg_72h_Long_3', 'Egg_72h_Long_4', 'Egg_72h_Long_5', 'Egg_72h_Long_6', 'Egg_72h_Short_2', 'Egg_72h_Short_3', 'Egg_72h_Short_5', 'Egg_72h_Short_6', 'Egg_72h_Short_7')
-countData <- countData[, columnList]
-
-dds <- DESeqDataSetFromMatrix(countData = round(countData), colData = colData, design = ~ condition)
-dds <- dds[rowSums(counts(dds)) >= 10,]
-dds$condition <- relevel(dds$condition, ref = "Non-diapause")
-dds <- DESeq(dds)
-res <- results(dds)
-
-normalized_counts <- counts(dds, normalized=TRUE)
-# head(normalized_counts)
-write.csv(as.data.frame(normalized_counts), file="deseq_normalized_counts.csv")
-
-# write.csv(as.data.frame(res[order(res$padj),]), file="result_padj_ordered.csv")
+short_cv <- calculate_cv(short_avg_combined)
+short_avg_combined <- short_avg_combined[short_cv < cv_threshold, ]
