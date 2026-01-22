@@ -1,9 +1,9 @@
 library(tidyverse)
 library(reshape2)
-library(pheatmap)
+library(pheatmap) # install.packages("pheatmap")
 
-long_data <- read.csv("/Users/kataokak/Downloads/merged_annotation_long.csv")
-short_data <- read.csv("/Users/kataokak/Downloads/merged_annotation_short.csv")
+long_data <- read.csv("/Users/kosukekataoka/Desktop/merged_annotation_long.csv")
+short_data <- read.csv("/Users/kosukekataoka/Desktop/merged_annotation_short.csv")
 
 long_clusters <- split(long_data$gene_id, long_data$cluster)
 short_clusters <- split(short_data$gene_id, short_data$cluster)
@@ -42,11 +42,10 @@ pheatmap(log_p_matrix,
          cluster_rows = hclust_long_ward, 
          cluster_cols = hclust_short_ward, 
          color = custom_colors,
-         breaks = seq(0, 50, length.out = 51),  
-         main = "Cluster Overlap Significance (log10 p-values) with Ward's Method",
-         angle_col = 0, 
+         breaks = seq(0, 50, length.out = 51),
+         angle_col = 0,
          labels_col = colnames(log_p_matrix),
          labels_row = rownames(log_p_matrix),
          annotation_legend = TRUE,
-         xlab = "Short", 
-         ylab = "Long")
+         xlab = "Short",  
+         ylab = "Long") 
